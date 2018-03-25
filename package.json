@@ -1,0 +1,36 @@
+{
+  "name": "staticmerkle",
+  "version": "0.0.1",
+  "description": "Static Merkle tree implementation ",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "bin": {
+    "staticmerkle": "./cli.js"
+  },
+  "keywords": [
+    "merkle",
+    "tree",
+    "identity",
+    "ethereum",
+    "blockchain"
+  ],
+  "author": "Jordi Baylina",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^4.19.0",
+    "eslint-plugin-mocha": "^4.12.1",
+    "mocha": "^5.0.4",
+    "node-cmd": "^3.0.0"
+  },
+  "dependencies": {
+    "commander": "^2.15.1",
+    "is-buffer": "^2.0.2",
+    "level": "^3.0.0",
+    "optimist": "^0.6.1"
+  }
+}
