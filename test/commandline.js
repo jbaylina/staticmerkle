@@ -41,9 +41,8 @@ describe("command line", () => {
             const b = Buffer.from([ i / 256, i % 256 ]);
             claims[i] = claimUtils.buildClaim("0x01", "0x02", "0x03", b).toString("hex");
         }
-        claims = claims.filter(function(n){ return n.length>0; });
 
-        claims.sort();
+        claims = claims.sort();
         const claimsFile = path.join(tmpPath, "claims100.hex");
         const dbFile = path.join(tmpPath, "claims100.db");
         await writeFile(claimsFile, claims.join("\n"), "utf8");
@@ -54,7 +53,8 @@ describe("command line", () => {
         let claims2 = data[0].split("\n");
 
         claims2 = claims2.filter(function(n){ return n.length>0; });
-        claims2.sort();
+        claims2 = claims2.sort();
+
         assert.equal(claims2.join("\n"), claims.join("\n"));
 
     });

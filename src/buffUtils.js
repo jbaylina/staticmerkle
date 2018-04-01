@@ -57,5 +57,5 @@ function setBit(b, bit, val) {
     } else {
         v = v & ( (~(1 << bit % 8)) & 0xFF );
     }
-    b.writeInt8(b.length - Math.floor(bit/8) - 1, v);
+    b.writeUInt8(v, b.length - Math.floor(bit/8) - 1);
 }

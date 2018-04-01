@@ -36,7 +36,6 @@ describe("static merkle", () => {
         assert.equal(buffUtils.toHex(SM140.root), buffUtils.toHex(empty));
 
         assert.equal(SM140.tx.inserts.length, 0);
-        assert.equal(SM140.tx.deletes.length, 0);
 
     });
 
@@ -85,13 +84,11 @@ describe("static merkle", () => {
         assert.equal(buffUtils.toHex(SM140.root), "0xff4902d6237f5bc50e38075b2171f337e727bcf4d9ae0636539f7c69712d37c3");
 
         for (i=0;i<claims.length; i++) {
-            assert.equal(SM140.tx.deletes.length, 0);
             await SM140.removeClaim(claims[i]);
         }
 
         assert.equal(buffUtils.toHex(SM140.root), buffUtils.toHex(empty));
         assert.equal(SM140.tx.inserts.length, 0);
-        assert.equal(SM140.tx.deletes.length, 0);
     });
 
     it("Should give the same root when added a repeated claim", async () => {
@@ -117,12 +114,28 @@ describe("static merkle", () => {
 
         assert.equal(buffUtils.toHex(SM140.root), buffUtils.toHex(empty));
         assert.equal(SM140.tx.inserts.length, 0);
-        assert.equal(SM140.tx.deletes.length, 0);
     });
 
-/*
-    it("Should create a levelDB", async () => {
-        const db = level('./test.db');
+    it("Should create a merkle proof and verify it ok", async () => {
+        const dbPrv = await MemDB();
+        const SM140 = await StaticMerkle(hash, dbPrv, 140);
+        const empty = SM140.root;
+        const claim1 = claimUtils.buildClaim("0x01", "0x02", "0x03", "0x04");
+        const claim2 = claimUtils.buildClaim("0x01", "0x02", "0x03", "0x05");
+
+        await SM140.addClaim(claim1);
+        await SM140.addClaim(claim2);
+
+        const mp = await SM140.getMerkeProof(claim1);
+
+        assert.equal(SM140.checkClaim(SM140.root, claim1, mp), true);
+        assert.equal(SM140.checkClaim(empty, claim1, mp), false);
+        assert.equal(SM140.checkClaim(empty, claim2, mp), false);
+
+        const mp1 = await SM140.getMerkeProof(claim1);
+        assert.equal(SM140.checkClaim(SM140.root, claim1, mp1), true);
+        const mp2 = await SM140.getMerkeProof(claim2);
+        assert.equal(SM140.checkClaim(SM140.root, claim2, mp2), true);
     });
-*/
+
 });
