@@ -1,0 +1,21 @@
+def forceBool(x):
+    x*(x-1) == 0
+
+def and(x1, x2, result):
+    result == x1*x2
+
+def or(x1, x2, result):
+    result == x1 + x2 - x1 * x2
+
+def xor(x1, x2, result):
+    result == x1 + x2 - 2*x1*x2
+
+def not(x1, result):
+    result == 1 + x1 - 2*x1
+
+def nand(x1, x2, result):
+    result == 1 - x1 * x2
+
+def nor(x1, x2, result):
+    result = x1 * x2 + 1 - x1 - x2
+

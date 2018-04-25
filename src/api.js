@@ -11,7 +11,7 @@ const readFile = util.promisify(fs.readFile);
 exports.addClaimsFile = async (dbFile, claimsfile) => {
     const text = await readFile(claimsfile, "utf8");
     const lines = text.split("\n");
-    const db = level(dbFile, {valueEncoding: "binary"});
+    const db = level(dbFile, {keyEncoding: "binary", valueEncoding: "binary"});
     const tree = await StaticMerkle(hash, db, 140);
 
     for (let i=0; i<lines.length; i++) {
@@ -23,7 +23,7 @@ exports.addClaimsFile = async (dbFile, claimsfile) => {
 exports.removeClaimsFile = async (dbFile, claimsfile) => {
     const text = await readFile(claimsfile, "utf8");
     const lines = text.split("\n");
-    const db = level(dbFile, {valueEncoding: "binary"});
+    const db = level(dbFile, {keyEncoding: "binary", valueEncoding: "binary"});
     const tree = await StaticMerkle(hash, db, 140);
 
     for (let i=0; i<lines.length; i++) {
@@ -33,7 +33,7 @@ exports.removeClaimsFile = async (dbFile, claimsfile) => {
 };
 
 exports.info = async (dbFile) => {
-    const db = level(dbFile, {valueEncoding: "binary"});
+    const db = level(dbFile, {keyEncoding: "binary", valueEncoding: "binary"});
     const tree = await StaticMerkle(hash, db, 140);
 
     const commits = await tree.getCommits();
@@ -42,7 +42,7 @@ exports.info = async (dbFile) => {
 };
 
 exports.export = async (dbFile, commit) => {
-    const db = level(dbFile, {valueEncoding: "binary"});
+    const db = level(dbFile, {keyEncoding: "binary", valueEncoding: "binary"});
     const tree = await StaticMerkle(hash, db, 140);
 
     const claims = await tree.getAllClaims(commit);
@@ -51,7 +51,7 @@ exports.export = async (dbFile, commit) => {
 };
 
 exports.generateProof = async (dbFile, commit, claim) => {
-    const db = level(dbFile, {valueEncoding: "binary"});
+    const db = level(dbFile, {keyEncoding: "binary", valueEncoding: "binary"});
     const tree = await StaticMerkle(hash, db, 140);
 
     return await tree.getMerkeProof(claim);

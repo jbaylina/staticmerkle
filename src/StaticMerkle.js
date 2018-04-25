@@ -211,7 +211,10 @@ class StaticMerkle {
         if (c > this.currentCommit) throw new Error("Invalid commit");
         let rootHash;
         if (c < this.currentCommit) {
-            rootHash = await this.db.get("v"+c);
+            const keyBuffVersion = new Buffer(32);
+            keyBuffVersion.writeIntBE(c, 26, 6);
+
+            rootHash = await this.db.get(keyBuffVersion);
         } else {
             rootHash = this.root;
         }
@@ -243,7 +246,9 @@ class StaticMerkle {
         if (c > this.currentCommit) throw new Error("Invalid commit");
         let rootHash;
         if (c < this.currentCommit) {
-            rootHash = await this.db.get("v"+c);
+            const keyBuffVersion = new Buffer(32);
+            keyBuffVersion.writeIntBE(c, 26, 6);
+            rootHash = await this.db.get(keyBuffVersion);
         } else {
             rootHash = this.root;
         }
@@ -329,7 +334,8 @@ class StaticMerkle {
 
         let currentVersion;
         try {
-            const b = await this.db.get("r");
+            const keyBuffRoot = new Buffer(32);
+            const b = await this.db.get(keyBuffRoot);
             if (b) {
                 currentVersion = b.readUIntBE(0,6);
             } else {
@@ -344,7 +350,9 @@ class StaticMerkle {
         }
         if (currentVersion) {
             this.currentCommit = currentVersion + 1;
-            this.root = await this.db.get("v"+currentVersion);
+            const keyBuffVersion = new Buffer(32);
+            keyBuffVersion.writeIntBE(currentVersion, 26, 6);
+            this.root = await this.db.get(keyBuffVersion);
             assert(this.root);
         } else {
             this.currentCommit = 1;
@@ -355,8 +363,8 @@ class StaticMerkle {
 
 
     async _readNodeDb(hash) {
-        const hashHex = "n"+buffUtils.toHex(hash);
-        const hashBuff = buffUtils.toBuffer(hash);
+        const hashHex = buffUtils.toHex(hash);
+        const hashBuff = buffUtils.padLeft(hash);
         const n = {
             hash: hashBuff,
         };
@@ -364,7 +372,7 @@ class StaticMerkle {
         if (this.tx.inserts[hashHex]) {
             r = this.tx.inserts[hashHex];
         } else {
-            r = await this.db.get(hashHex);
+            r = await this.db.get(hashBuff);
         }
         assert(r);
         n.commit = r.readUIntBE(2,6);
@@ -381,7 +389,7 @@ class StaticMerkle {
     }
 
     _addFinalNode(hash, claimHash) {
-        const hashHex = "n"+buffUtils.toHex(hash);
+        const hashHex = buffUtils.toHex(hash);
         const claimHashBuff = buffUtils.toBuffer(claimHash);
         const b = Buffer.allocUnsafe(40);
         b.writeIntBE(FINAL_NODE, 0, 1);
@@ -395,7 +403,7 @@ class StaticMerkle {
         const childH1Buff = buffUtils.toBuffer(childH1);
         const childH2Buff = buffUtils.toBuffer(childH2);
         const hash = this._hash2(childH1Buff, childH2Buff);
-        const hashHex = "n"+buffUtils.toHex(hash);
+        const hashHex = buffUtils.toHex(hash);
         const b = Buffer.allocUnsafe(72);
         b.writeIntBE(NORMAL_NODE, 0, 1);
         b.writeIntBE(0, 1, 1);
@@ -407,7 +415,7 @@ class StaticMerkle {
     }
 
     _removeNodeDb(hash) {
-        const hashHex = "n"+buffUtils.toHex(hash);
+        const hashHex = buffUtils.toHex(hash);
 
         if (this.tx.inserts[hashHex]) {
             delete this.tx.inserts[hashHex];
@@ -416,19 +424,20 @@ class StaticMerkle {
     }
 
     async _readClaimDb(claimHash) {
-        const claimHashHex = "c"+buffUtils.toHex(claimHash);
+        const claimHashHex = buffUtils.toHex(claimHash);
+        const claimHashBuff = buffUtils.padLeft(claimHashHex,32);
         let b;
         if (this.tx.inserts[claimHashHex]) {
             b = this.tx.inserts[claimHashHex];
         } else {
-            b = await this.db.get(claimHashHex);
+            b = await this.db.get(claimHashBuff);
         }
 
         return b.slice(8);
     }
 
     _addClaimDb(claimHash, claim) {
-        const claimHashHex = "c"+buffUtils.toHex(claimHash);
+        const claimHashHex = buffUtils.toHex(claimHash);
         const b = Buffer.allocUnsafe(8+claim.length);
         b.writeIntBE(CLAIM, 0, 1);
         b.writeIntBE(0, 1, 1);
@@ -440,7 +449,7 @@ class StaticMerkle {
     }
 
     async _removeClaimDb(claimHash) {
-        const claimHashHex = "c"+buffUtils.toHex(claimHash);
+        const claimHashHex = buffUtils.toHex(claimHash);
         if (this.tx.inserts[claimHashHex]) {
             delete this.tx.inserts[claimHashHex];
         }
@@ -450,19 +459,23 @@ class StaticMerkle {
         const _this = this;
         const ops = [];
         Object.keys(this.tx.inserts).map(function(key) {
+            const keyBuffNode = buffUtils.padLeft(key,32);
             ops.push({
-                key: key,
+                key: keyBuffNode,
                 value: _this.tx.inserts[key]
             });
         });
+        const keyBuffVersion = new Buffer(32);
+        keyBuffVersion.writeIntBE(this.currentCommit, 26, 6);
         ops.push({
-            key: "v"+this.currentCommit,
+            key: keyBuffVersion,
             value: this.root
         });
+        const keyBuffRoot = new Buffer(32);
         const b = new Buffer(8);
         b.writeIntBE(this.currentCommit, 0, 6);
         ops.push({
-            key: "r",
+            key: keyBuffRoot,
             value: b
         });
         this.currentCommit ++;
@@ -474,7 +487,10 @@ class StaticMerkle {
         const commits = [];
         let r;
         for (let i=1; i<this.currentCommit; i++) {
-            r = await this.db.get("v"+i);
+            const keyBuffVersion = new Buffer(32);
+            keyBuffVersion.writeIntBE(i, 26, 6);
+
+            r = await this.db.get(keyBuffVersion);
             commits[i] = r;
         }
         if (!buffUtils.equal(r, this.root)) {
