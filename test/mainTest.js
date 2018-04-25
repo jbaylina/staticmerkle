@@ -2,7 +2,7 @@ const assert = require("assert");
 
 const StaticMerkle = require("../src/StaticMerkle.js");
 const MemDB = require("../src/dbMem.js");
-const hash = require("../src/hashSHA256.js");
+const hash = require("../src/hashKeccak.js");
 const buffUtils = require("../src/buffUtils.js");
 const claimUtils = require("../src/claimUtils.js");
 
@@ -15,14 +15,14 @@ describe("static merkle", () => {
         const dbPrv0 = await MemDB();
         const SM0 = await StaticMerkle(hash, dbPrv0, 0);
         const empty = SM0.root;
-        assert.equal(buffUtils.toHex(empty), "0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
+        assert.equal(buffUtils.toHex(empty), "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470");
     });
 
     it("create an empty", async () => {
         const dbPrv = await MemDB();
         const SM140 = await StaticMerkle(hash, dbPrv, 140);
         const empty = SM140.root;
-        assert.equal(buffUtils.toHex(empty), "0x162b8fa4dcbd34ed46924ba426137adb7f2382dda2694d5184de02b7fa017e2f");
+        assert.equal(buffUtils.toHex(empty), "0x3bd4272c1c556e016a8f7111b04005319fbd1e546875f354b5dd230f4d8ab1c1");
     });
 
     it("should add and remove a claim", async() => {
@@ -31,7 +31,7 @@ describe("static merkle", () => {
         const empty = SM140.root;
         const claim = claimUtils.buildClaim("0x01", "0x02", "0x03", "0x04");
         await SM140.addClaim(claim);
-        assert.equal(buffUtils.toHex(SM140.root), "0x91ac35298ae67c5b0d6eed974cbc92c7925baadcebc7b6e0659d6dd240bbaad6");
+        assert.equal(buffUtils.toHex(SM140.root), "0x062e6d2209d26ca9affe0721ee3c38fcb4e22ff6a09bced50f38026d974cfca7");
         await SM140.removeClaim(claim);
         assert.equal(buffUtils.toHex(SM140.root), buffUtils.toHex(empty));
 
@@ -81,7 +81,7 @@ describe("static merkle", () => {
             await SM140.addClaim(claims[i]);
         }
 
-        assert.equal(buffUtils.toHex(SM140.root), "0xff4902d6237f5bc50e38075b2171f337e727bcf4d9ae0636539f7c69712d37c3");
+        assert.equal(buffUtils.toHex(SM140.root), "0x7e9cf308435593267d01f065ca3593666462452f2999ac38e7a0a382db99fb9e");
 
         for (i=0;i<claims.length; i++) {
             await SM140.removeClaim(claims[i]);
@@ -106,7 +106,7 @@ describe("static merkle", () => {
             await SM140.addClaim(claims[i]);
         }
 
-        assert.equal(buffUtils.toHex(SM140.root), "0xff4902d6237f5bc50e38075b2171f337e727bcf4d9ae0636539f7c69712d37c3");
+        assert.equal(buffUtils.toHex(SM140.root), "0x7e9cf308435593267d01f065ca3593666462452f2999ac38e7a0a382db99fb9e");
 
         for (i=0;i<claims.length; i++) {
             await SM140.removeClaim(claims[i]);
@@ -114,7 +114,7 @@ describe("static merkle", () => {
 
         assert.equal(buffUtils.toHex(SM140.root), buffUtils.toHex(empty));
         assert.equal(SM140.tx.inserts.length, 0);
-    });
+    }).timeout(20000);
 
     it("Should create a merkle proof and verify it ok", async () => {
         const dbPrv = await MemDB();

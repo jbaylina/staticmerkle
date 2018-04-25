@@ -57,5 +57,5 @@ describe("command line", () => {
 
         assert.equal(claims2.join("\n"), claims.join("\n"));
 
-    });
+    }).timeout(20000);
 });

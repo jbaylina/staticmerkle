@@ -1,7 +1,7 @@
 
 const util = require("util");
 const fs = require("fs");
-const hash = require("./hashSHA256.js");
+const hash = require("./hashKeccak.js");
 const StaticMerkle = require("./StaticMerkle.js");
 const level = require("level");
 const MemDB = require("../src/dbMem.js");
