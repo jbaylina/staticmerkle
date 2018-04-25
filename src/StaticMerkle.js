@@ -337,7 +337,7 @@ class StaticMerkle {
             const keyBuffRoot = new Buffer(32);
             const b = await this.db.get(keyBuffRoot);
             if (b) {
-                currentVersion = b.readUIntBE(0,6);
+                currentVersion = b.readUIntBE(2,6);
             } else {
                 currentVersion = null;
             }
@@ -473,7 +473,7 @@ class StaticMerkle {
         });
         const keyBuffRoot = new Buffer(32);
         const b = new Buffer(8);
-        b.writeIntBE(this.currentCommit, 0, 6);
+        b.writeIntBE(this.currentCommit, 2, 6);
         ops.push({
             key: keyBuffRoot,
             value: b
