@@ -11,9 +11,9 @@ contract StaticMerkle {
     function verify(bytes32 root, bytes claim, bytes mp) public pure  returns(bool) {
         if (mp.length < 32) return false;
         if (claim.length == 0) return false;
-        bytes32 claimHash = sha256(claim);
+        bytes32 claimHash = keccak256(claim);
         bytes32 map = bytes32atPos(mp, 0);
-        bytes32 void = sha256("");
+        bytes32 void = keccak256("");
         bytes32 h = claimHash;
         bytes32 hs;
         uint o = 32;
@@ -26,13 +26,13 @@ contract StaticMerkle {
                 o+=32;
             }
             if (claimHash & 1 == 0) {
-                h = sha256(h, hs);
+                h = keccak256(h, hs);
             } else {
-                h = sha256(hs, h);
+                h = keccak256(hs, h);
             }
             map = map >> 1;
             claimHash = claimHash >> 1;
-            void = sha256(void, void);
+            void = keccak256(void, void);
         }
         if (o!=mp.length) return false;
         return (h==root);
