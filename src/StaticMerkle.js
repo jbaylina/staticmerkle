@@ -18,6 +18,8 @@ const CLAIM = 0;
 const NORMAL_NODE = 1;
 const FINAL_NODE = 2;
 
+const EMPTY = new Buffer(32);  // An empty buffer with 32 zeros
+
 module.exports = async (hash, db, depth) => {
     const o = new StaticMerkle(hash, db, depth);
     await o.initialize();
@@ -51,7 +53,7 @@ class StaticMerkle {
 
 
     async _addClaimHash(rootHash, claimHash, level, oneElement) {
-        if (buffUtils.equal(rootHash, this.empty[level])) {
+        if (buffUtils.equal(rootHash, EMPTY)) {
             this._addFinalNode(oneElement[level], claimHash);
             return oneElement[level];
         }
@@ -130,9 +132,9 @@ class StaticMerkle {
         // Go up from l+2 until the root Node
         for (let i=l+2; i<=level; i++) {
             if (bits[i] == 1) {
-                h = this._addNormalNode(this.empty[i-1], h);
+                h = this._addNormalNode(EMPTY, h);
             } else {
-                h = this._addNormalNode(h, this.empty[i-1]);
+                h = this._addNormalNode(h, EMPTY);
             }
         }
 
@@ -156,9 +158,9 @@ class StaticMerkle {
 
 
     async _removeClaimHash(rootHash, claimHash, level, oneElement) {
-        if ( buffUtils.equal(rootHash, this.empty[level]) ) {
+        if ( buffUtils.equal(rootHash, EMPTY) ) {
             // Does not exist
-            return this.empty[level];
+            return EMPTY;
         }
         const node = await this._readNodeDb(rootHash);
         if (node.type == NORMAL_NODE) {
@@ -178,14 +180,14 @@ class StaticMerkle {
 
             let nextNode = null;
             let nextNodeHash = null;
-            if ((buffUtils.equal(hashes[0], this.empty[level-1])) &&
-                (buffUtils.equal(hashes[1], this.empty[level-1]))) {
-                return this.empty[level];
+            if ((buffUtils.equal(hashes[0], EMPTY)) &&
+                (buffUtils.equal(hashes[1], EMPTY))) {
+                return EMPTY;
             }
-            if (buffUtils.equal(hashes[0], this.empty[level-1]) ) {
+            if (buffUtils.equal(hashes[0], EMPTY) ) {
                 nextNodeHash = hashes[1];
             }
-            if (buffUtils.equal(hashes[1], this.empty[level-1]) ) {
+            if (buffUtils.equal(hashes[1], EMPTY) ) {
                 nextNodeHash = hashes[0];
             }
             if (nextNodeHash) {
@@ -202,7 +204,7 @@ class StaticMerkle {
             return h;
         } else if (node.type == FINAL_NODE) {
             this._removeNodeDb(rootHash);
-            return this.empty[level];
+            return EMPTY;
         }
     }
 
@@ -228,7 +230,7 @@ class StaticMerkle {
     }
 
     async _getClaimHashes(hashes, rootHash, level) {
-        if ( buffUtils.equal(rootHash, this.empty[level]) ) {
+        if ( buffUtils.equal(rootHash, EMPTY) ) {
             return;
         }
         const node = await this._readNodeDb(rootHash);
@@ -279,13 +281,18 @@ class StaticMerkle {
         const node = await this._readNodeDb(rootHash);
         assert(node);
         if (node.type == NORMAL_NODE) {
-            buffUtils.setBit(map, level-1, 1);
             const bit = buffUtils.getBit(claimHash, level-1);
             if (bit) {
-                siblings.unshift(node.childH[0]);
+                if (!buffUtils.equal(node.childH[0], EMPTY)) {
+                    buffUtils.setBit(map, level-1, 1);
+                    siblings.unshift(node.childH[0]);
+                }
                 return await this._getMerkleProofHash(map, siblings, node.childH[1], claimHash, level-1);
             } else {
-                siblings.unshift(node.childH[1]);
+                if (!buffUtils.equal(node.childH[1], EMPTY)) {
+                    buffUtils.setBit(map, level-1, 1);
+                    siblings.unshift(node.childH[1]);
+                }
                 return await this._getMerkleProofHash(map, siblings, node.childH[0], claimHash, level-1);
             }
         } else if (node.type == FINAL_NODE) {
@@ -312,7 +319,7 @@ class StaticMerkle {
                 h2 = mp.slice(o, o+32);
                 o += 32;
             } else {
-                h2 = this.empty[l-1];
+                h2 = EMPTY;
             }
             if (buffUtils.getBit(claimHash, l-1)) {
                 h = this._hash2(h2, h);
@@ -325,13 +332,6 @@ class StaticMerkle {
     }
 
     async initialize() {
-        const emptyBuff = Buffer.from("");
-        this.empty = [];
-        this.empty[0] = this.hash(emptyBuff);
-        for (let i=1; i<=this.depth; i++) {
-            this.empty[i] = this._hash2(this.empty[i-1], this.empty[i-1]);
-        }
-
         let currentVersion;
         try {
             const keyBuffRoot = new Buffer(32);
@@ -356,7 +356,7 @@ class StaticMerkle {
             assert(this.root);
         } else {
             this.currentCommit = 1;
-            this.root = this.empty[this.depth];
+            this.root = EMPTY;
         }
     }
 
@@ -512,9 +512,9 @@ class StaticMerkle {
         for (let i=1; i<= this.depth; i++) {
             const bit = buffUtils.getBit(claimHash, i-1);
             if (bit) {
-                r.push(this._hash2(this.empty[i-1], r[i-1]));
+                r.push(this._hash2(EMPTY, r[i-1]));
             } else {
-                r.push(this._hash2(r[i-1], this.empty[i-1]));
+                r.push(this._hash2(r[i-1], EMPTY));
             }
         }
         return r;

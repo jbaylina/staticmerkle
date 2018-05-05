@@ -3,10 +3,10 @@
 
 def looseMux(in0_0, in0_1,.... in0_m, in1_0, in1_1, in1_m, .... inn_1_0, inn_1_1, .., inn_1_m_1, index, out0, out1, .., outm_1, success_flag)
 
-    indicator0 = index == 0 ? 1 : 0
-    indicator0 = index == 1 ? 1 : 0
+    indicator_0 = index == 0 ? 1 : 0
+    indicator_1 = index == 1 ? 1 : 0
     ..
-    indicator0 = index == n-1 ? 1 : 0
+    indicator_n = index == n-1 ? 1 : 0
 
     successFlag = index >=n ? 0 : 1
 
@@ -20,4 +20,34 @@ def looseMux(in0_0, in0_1,.... in0_m, in1_0, in1_1, in1_m, .... inn_1_0, inn_1_1
     isBoolean(successFlag)
 
     out0 = innerRpoduct(in0_0, in1_0, ... inn-1, 0, indicator0, indicator1, .. indicator_n-1)
+
+
+isBinary(pb, b) {
+    pb.constrain([0], [1, -1], [successFlag, one()], [1], [successFlag]);
+}
+
+
+
+loseMux(pb, m, n, index, in, out, successFlag) {
+    const indicator = pb.signalArray(n);
+    let sval = 0;
+    for (let i=0; i<n; i++) {
+        pb.setSignal(indicator[i],  (index.val() == i) ? 1 : 0);
+        pb.constrain([0], [1], [indicator[i]], [1, -1], [index, one()])
+        sval += indicator[i].val();
+    }
+    pb.setSignal(successFlag, sval);
+    pb.constrain(successFlag, [1], [pb.one()], ones(n), indicators)
+
+    isBinary(pb, successFlag);
+
+    const a = [];
+    for (let i=0; <m; i++) {
+        for (let j=0; j<n; j++) {
+            a.push(in[j][i])
+        }
+        innerProduct(n, a, indicator, out[i])
+    }
+}
+
 

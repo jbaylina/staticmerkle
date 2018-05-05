@@ -46,12 +46,12 @@ function padLeft(_b, len) {
 
 function getBit(_b, bit) {
     const b = toBuffer(_b);
-    const v = b.readInt8(b.length - Math.floor(bit/8) - 1);
+    const v = b.readUInt8(b.length - Math.floor(bit/8) - 1);
     return (v >> (bit % 8)) & 1;
 }
 
 function setBit(b, bit, val) {
-    let v = b.readInt8(b.length - Math.floor(bit/8) - 1);
+    let v = b.readUInt8(b.length - Math.floor(bit/8) - 1);
     if (val == 1) {
         v = v | (1 << (bit %8));
     } else {

@@ -5,3 +5,26 @@ def innerProduct(<% array("a", n)%>, <% array("b", n) %>, result):
     <% } %>
     result = a<%=n-1%> * b<%=n-1%> + ps<%=n-2%>
 
+
+def innerProduct(in a[n], in b[n], out result, param n)
+    signal ps[n-1]
+    ps[0] := a[0] * b[0]
+    let i=0;
+    for (i=0; i<n-1;i++) {
+        ps[i] := a[i] * b[i] + ps[i-1]
+    }
+    result := a[n-1] * b[n-1] * ps n-2;
+
+
+function innerProduct(PB, n) {
+
+    return function(a, b) {
+        addPB
+    }
+
+}
+
+
+class Gadget
+
+

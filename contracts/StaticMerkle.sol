@@ -13,14 +13,13 @@ contract StaticMerkle {
         if (claim.length == 0) return false;
         bytes32 claimHash = keccak256(claim);
         bytes32 map = bytes32atPos(mp, 0);
-        bytes32 void = keccak256("");
         bytes32 h = claimHash;
         bytes32 hs;
         uint o = 32;
         uint i;
         for(i=0;i<140;i++) {
             if (map & 1 == 0) {
-                hs = void;
+                hs = bytes32(0);
             } else {
                 hs = bytes32atPos(mp, o);
                 o+=32;
@@ -32,7 +31,6 @@ contract StaticMerkle {
             }
             map = map >> 1;
             claimHash = claimHash >> 1;
-            void = keccak256(void, void);
         }
         if (o!=mp.length) return false;
         return (h==root);

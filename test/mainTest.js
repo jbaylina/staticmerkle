@@ -15,14 +15,14 @@ describe("static merkle", () => {
         const dbPrv0 = await MemDB();
         const SM0 = await StaticMerkle(hash, dbPrv0, 0);
         const empty = SM0.root;
-        assert.equal(buffUtils.toHex(empty), "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470");
+        assert.equal(buffUtils.toHex(empty), "0x0000000000000000000000000000000000000000000000000000000000000000");
     });
 
     it("create an empty", async () => {
         const dbPrv = await MemDB();
         const SM140 = await StaticMerkle(hash, dbPrv, 140);
         const empty = SM140.root;
-        assert.equal(buffUtils.toHex(empty), "0x3bd4272c1c556e016a8f7111b04005319fbd1e546875f354b5dd230f4d8ab1c1");
+        assert.equal(buffUtils.toHex(empty), "0x0000000000000000000000000000000000000000000000000000000000000000");
     });
 
     it("should add and remove a claim", async() => {
@@ -31,7 +31,7 @@ describe("static merkle", () => {
         const empty = SM140.root;
         const claim = claimUtils.buildClaim("0x01", "0x02", "0x03", "0x04");
         await SM140.addClaim(claim);
-        assert.equal(buffUtils.toHex(SM140.root), "0x062e6d2209d26ca9affe0721ee3c38fcb4e22ff6a09bced50f38026d974cfca7");
+        assert.equal(buffUtils.toHex(SM140.root), "0xd3d9ad5e3c0b38c4e3eb411e9e3114b5ed8fb5c4bc69158329feb1a62743cda1");
         await SM140.removeClaim(claim);
         assert.equal(buffUtils.toHex(SM140.root), buffUtils.toHex(empty));
 
@@ -81,7 +81,7 @@ describe("static merkle", () => {
             await SM140.addClaim(claims[i]);
         }
 
-        assert.equal(buffUtils.toHex(SM140.root), "0x7e9cf308435593267d01f065ca3593666462452f2999ac38e7a0a382db99fb9e");
+        assert.equal(buffUtils.toHex(SM140.root), "0xb57c288d5c018c56610a3fb783062c9b199221734c8c5617795b57cbdbd4347f");
 
         for (i=0;i<claims.length; i++) {
             await SM140.removeClaim(claims[i]);
@@ -106,7 +106,7 @@ describe("static merkle", () => {
             await SM140.addClaim(claims[i]);
         }
 
-        assert.equal(buffUtils.toHex(SM140.root), "0x7e9cf308435593267d01f065ca3593666462452f2999ac38e7a0a382db99fb9e");
+        assert.equal(buffUtils.toHex(SM140.root), "0xb57c288d5c018c56610a3fb783062c9b199221734c8c5617795b57cbdbd4347f");
 
         for (i=0;i<claims.length; i++) {
             await SM140.removeClaim(claims[i]);
